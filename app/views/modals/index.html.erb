@@ -1,0 +1,88 @@
+<style>
+
+  .index-wrapper {
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr 4fr;
+  }
+  
+  .d-none {
+    display: none
+  }
+
+</style>
+
+<div class='index-wrapper'>
+    <div class="d-flex justify-content-center align-items-center">
+        <button class="btn-primary">Show modal</button>
+    </div>
+
+    <%= 
+      render(
+        partial: 'shared/modal'
+      )
+    -%>
+</div>
+
+<script>
+    class ViewObject {
+      constructor(state){
+        this.state = state;
+        this.container = document.querySelector('.index-wrapper');
+        this.buttonElement = this.container.querySelector('.btn-primary');
+        this.modalContainer = this.container.querySelector('.modal-wrapper');
+      }
+
+      updateModal(){
+        if(this.state.getModalRenderingValue()){
+          this.modalContainer.classList.remove('d-none');
+        }else{
+          this.modalContainer.classList.add('d-none')
+        }
+      }
+
+      updateButton(){
+        if(this.state.getModalRenderingValue()){
+          this.buttonElement.innerText = 'Hide modal'
+        }else{
+          this.buttonElement.innerText = 'Show modal'
+        }
+      }
+
+      addOnClickEventToButton() {
+        const buttonElement = this.buttonElement;
+        buttonElement.addEventListener('click', () => {
+          if(this.state.modalRendering){
+            this.state.setModalRenderingValue(false)
+          }else{
+            this.state.setModalRenderingValue(true)
+          }
+          this.updateModal()
+          this.updateButton()
+        })
+        
+      }
+
+    }
+
+    class IndexState {
+      constructor(){
+        this.value = true;
+        this.modalRendering = false;
+      }
+
+      getModalRenderingValue(){
+        return this.modalRendering
+      }
+
+      setModalRenderingValue(newValue){
+        this.modalRendering = newValue
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const indexState = new IndexState()
+      const viewObject = new ViewObject(indexState)
+      viewObject.addOnClickEventToButton()
+    })
+</script>

@@ -1,0 +1,227 @@
+<style>
+    .modal-wrapper {
+        width: 700px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    }
+
+    .modal-title-wrapper h3{
+        text-align: center;
+    }
+
+    .modal-guests, .modal-guest-plusOnes {
+        display: grid;
+        gap: 10px;
+        padding: 10px 0px;
+    }
+
+    .modal-guests .guest-row, .guest-plusOne-row {
+        display: grid;
+        grid-auto-flow: row;
+        grid-template-columns: 1fr 6fr 3fr;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .checkbox-wrapper{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .guest-data-container, .guest-plusOne-data-container {
+        padding: 0px 15px;
+        border: 1px solid black;
+        border-radius: 5px;
+    }
+
+    .guest-data-container:hover, .guest-plusOne-data-container:hover {
+        cursor: pointer
+    }
+
+    .checkbox-wrapper input {
+        height: 20px;
+        width: 20px;
+    }
+
+    .checkbox-wrapper input:hover {
+        cursor: pointer;
+    }
+</style>
+
+<div class="modal-wrapper d-none">
+    <div class="modal-title-wrapper">
+        <h3></h3>
+    </div>
+    <hr>
+    <div class="modal-body-wrapper">
+        <div class="modal-guests row"> 
+    
+        </div>
+        <div class="modal-guest-plusOnes row"> 
+            
+        </div>
+    </div>
+    <button>State</button>
+</div>
+
+<script>
+    (() => {
+        class ViewObject {
+            constructor(state){
+                this.state = state;
+                this.container = document.querySelector('.modal-wrapper');
+                this.modalTitle = document.querySelector('.modal-title-wrapper');
+                this.modalGuests = this.container.querySelector('.modal-guests');
+                this.modalGuestsPlusOnes = this.container.querySelector('.modal-guest-plusOnes');
+                this.button = this.container.querySelector('button')
+                this.updateModalContent()
+                this.updateModalTitle()
+            }
+
+            initiate(){
+                this.updateModalContent();
+                this.addOnClickEventListenerToCheckbox();
+                this.addOnClickEventListenerToButton();
+                this.addOnClickEventListenerToDataContainer();
+            }
+
+            updateModalTitle(){
+                const title = this.modalTitle.querySelector('h3');
+                title.innerHTML = `You have ${this.state.getNumberOfPlusOnes()} plus-ones remaining`
+            }
+
+            updateModalContent() {
+                const guestRow = this.createGuestRow(this.state.invite)
+                this.modalGuests.innerHTML = '';
+                this.modalGuests.appendChild(guestRow);
+                this.modalGuestsPlusOnes.innerHTML = '';
+                this.state.plusOnes.forEach(plusOne => {
+                    const plusOneRow = this.createPlusOneRow(plusOne)
+                    this.modalGuestsPlusOnes.appendChild(plusOneRow)
+                })
+            }
+
+            createGuestRow(invite) {
+                const guestRow = document.createElement('div');
+                guestRow.className = 'guest-row';
+                
+                const checkboxWrapper = document.createElement('div');
+                checkboxWrapper.className = 'checkbox-wrapper';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'checkbox-input';
+                checkboxWrapper.appendChild(checkbox);
+                
+                const guestDataContainer = document.createElement('div');
+                guestDataContainer.className = 'guest-data-container data';
+                const nameHeader = document.createElement('h4');
+                nameHeader.textContent = invite.name;
+                const emailHeader = document.createElement('h5');
+                emailHeader.textContent = invite.email;
+                guestDataContainer.appendChild(nameHeader);
+                guestDataContainer.appendChild(emailHeader);
+                
+                guestRow.appendChild(checkboxWrapper);
+                guestRow.appendChild(guestDataContainer);
+                
+                return guestRow;
+            }
+
+            createPlusOneRow(plusOne){
+                const plusOnesRow = document.createElement('div');
+                plusOnesRow.className = "guest-plusOne-row";
+
+                const checkboxWrapper = document.createElement('div');
+                checkboxWrapper.className = 'checkbox-wrapper';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'checkbox-input';
+                checkboxWrapper.appendChild(checkbox);
+                
+                const guestDataContainer = document.createElement('div');
+                guestDataContainer.className = 'guest-plusOne-data-container data';
+                const nameHeader = document.createElement('h4');
+                nameHeader.textContent = plusOne.name;
+                const emailHeader = document.createElement('h5');
+                emailHeader.textContent = plusOne.email;
+                guestDataContainer.appendChild(nameHeader);
+                guestDataContainer.appendChild(emailHeader);
+
+                plusOnesRow.appendChild(checkboxWrapper);
+                plusOnesRow.appendChild(guestDataContainer);
+
+                return plusOnesRow
+            }
+
+            addOnClickEventListenerToButton(){
+                this.button.addEventListener('click', () => {
+                    console.log(this.state.selectedInvites)
+                })
+            }
+            
+            addOnClickEventListenerToCheckbox(){
+                const checkboxInputs = this.container.querySelectorAll('.checkbox-input');
+                checkboxInputs.forEach(checkboxInput => {
+                    checkboxInput.addEventListener('click', (ev) => {
+                        const dataContainerElement = checkboxInput.closest('.row > div').querySelector('.data');
+                        const name = dataContainerElement.querySelector('h4').innerText;
+                        const email = dataContainerElement.querySelector('h5').innerText;
+                        if(event.target.checked){
+                            this.state.selectedInvites.push({name, email})
+                        }else{
+                            const elementOnState = this.state.selectedInvites.find(guest => guest.name == name); //añadir id único
+                            this.state.selectedInvites = this.state.selectedInvites.filter(guest => guest.name !== elementOnState.name) // añadir id único
+                        }
+                    })
+                })
+        
+            }
+
+            addOnClickEventListenerToDataContainer(){
+                const dataContainerElements = this.container.querySelectorAll('.data');
+                dataContainerElements.forEach(dataContainer => {
+                    dataContainer.addEventListener('click', () => {
+                       const row = dataContainer.closest('.row > div').querySelector('input')
+                        row.click()
+                    })
+                })
+            }
+        }
+
+        class ModalState {
+            constructor(){
+                this.invite = {
+                    name: 'Jaider Cueto Logreira', 
+                    email: 'jaidercueto.1010@gmail.com'
+                };
+                this.plusOnes = [
+                    {name: 'John Doe', email: 'john@example.com' },
+                    {name: 'Jane Smith', email: 'jane@example.com' },
+                    {name: 'Harry Potter', email: 'harry@example.com'}
+                ];
+                this.selectedInvites = []
+            }
+
+            getNumberOfPlusOnes(){
+                return this.plusOnes.length
+            }
+
+            getSelectedInvites(){
+                return this.selectedInvites;
+            }
+
+            setSelectedInvites(newValue){
+                this.selectedInvites = newValue;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+                const modalState = new ModalState();
+                const viewObject = new ViewObject(modalState);
+                viewObject.initiate();
+        })
+    })(); //Me muestra un error si no se ejecuta la función enseguida.
+</script>
