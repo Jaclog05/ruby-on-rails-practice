@@ -1,3 +1,7 @@
+<%
+    invitee = invite.invitee
+%>
+
 <style>
     .modal-wrapper {
         width: 700px;
@@ -192,16 +196,14 @@
         }
 
         class ModalState {
-            constructor(){
-                this.invite = {
-                    name: 'Jaider Cueto Logreira', 
-                    email: 'jaidercueto.1010@gmail.com'
-                };
-                this.plusOnes = [
+            constructor({invite, plusOnes}){
+                this.invite = invite;
+                /* this.plusOnes = [
                     {name: 'John Doe', email: 'john@example.com' },
                     {name: 'Jane Smith', email: 'jane@example.com' },
                     {name: 'Harry Potter', email: 'harry@example.com'}
-                ];
+                ]; */
+                this.plusOnes = plusOnes;
                 this.selectedInvites = []
             }
 
@@ -219,7 +221,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-                const modalState = new ModalState();
+                const invite = {
+                    id: <%= invite.id %>,
+                    name: '<%= "#{invitee.first_name} #{invitee.last_name}" %>',
+                    email: '<%= invitee.email %>'
+                };
+                const plusOnes = [
+                    <% invite.plus_ones.each do |plus_one| %>
+                        {
+                            id: <%= plus_one.id %>,
+                            name: '<%= "#{plus_one.invitee.first_name} #{plus_one.invitee.last_name}" %>',
+                            email: '<%= plus_one.invitee.email %>'
+                        },
+                    <% end %>
+                ];
+                const modalState = new ModalState({invite, plusOnes});
                 const viewObject = new ViewObject(modalState);
                 viewObject.initiate();
         })
