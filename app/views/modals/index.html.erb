@@ -19,7 +19,10 @@
 
     <%= 
       render(
-        partial: 'shared/modal'
+        partial: 'shared/modal',
+        locals: {
+          invite: @invites.first,
+        }
       )
     -%>
 </div>
